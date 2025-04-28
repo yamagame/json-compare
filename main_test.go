@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"reflect"
 	"testing"
@@ -39,9 +40,27 @@ func TestCompareJSON(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := compareJSON(tt.file1, tt.file2, tt.ignorePaths)
+			data1, err := os.ReadFile(tt.file1)
+			if err != nil {
+				t.Fatalf("Failed to read file1: %v", err)
+			}
+			var json1 map[string]interface{}
+			if err := json.Unmarshal(data1, &json1); err != nil {
+				t.Fatalf("Failed to parse JSON from file1: %v", err)
+			}
+
+			data2, err := os.ReadFile(tt.file2)
+			if err != nil {
+				t.Fatalf("Failed to read file2: %v", err)
+			}
+			var json2 map[string]interface{}
+			if err := json.Unmarshal(data2, &json2); err != nil {
+				t.Fatalf("Failed to parse JSON from file2: %v", err)
+			}
+
+			err = compareJSONMaps(json1, json2, tt.ignorePaths)
 			if (err != nil) != tt.wantError {
-				t.Errorf("compareJSON() error = %v, wantError %v", err, tt.wantError)
+				t.Errorf("compareJSONMaps() error = %v, wantError %v", err, tt.wantError)
 			}
 		})
 	}
@@ -89,9 +108,27 @@ $.nested.ignoreField
 				t.Fatalf("Failed to load ignore file: %v", err)
 			}
 
-			err = compareJSON(tt.file1, tt.file2, ignorePaths)
+			data1, err := os.ReadFile(tt.file1)
+			if err != nil {
+				t.Fatalf("Failed to read file1: %v", err)
+			}
+			var json1 map[string]interface{}
+			if err := json.Unmarshal(data1, &json1); err != nil {
+				t.Fatalf("Failed to parse JSON from file1: %v", err)
+			}
+
+			data2, err := os.ReadFile(tt.file2)
+			if err != nil {
+				t.Fatalf("Failed to read file2: %v", err)
+			}
+			var json2 map[string]interface{}
+			if err := json.Unmarshal(data2, &json2); err != nil {
+				t.Fatalf("Failed to parse JSON from file2: %v", err)
+			}
+
+			err = compareJSONMaps(json1, json2, ignorePaths)
 			if (err != nil) != tt.wantError {
-				t.Errorf("compareJSON() error = %v, wantError %v", err, tt.wantError)
+				t.Errorf("compareJSONMaps() error = %v, wantError %v", err, tt.wantError)
 			}
 		})
 	}
